@@ -1,6 +1,6 @@
 # AI Content Keyboard
 
-An AI-powered keyboard designed to understand conversational context and user tone, providing seamless, personalized reply suggestions in real time. Built as a portfolio project and submission for the LUMA Hackathon.
+An AI-power-ued keyboard designed to understand conversational context and user tone, providing seamless, personalized reply suggestions in real time. Built as a portfolio project and submission for the LUMA Hackathon.
 
 ---
 
