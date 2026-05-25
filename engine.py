@@ -1,28 +1,50 @@
 import urllib.request
 import json
 
-# 1. Open the .env file and grab the secret key
+# 1. Grab the secret key
 api_key = ""
 with open(".env", "r") as file:
     for line in file:
         if "GEMINI_API_KEY" in line:
-            # Clean up the text to extract just the key itself
             api_key = line.split("=")[1].strip().strip('"').strip("'")
 
-# 2. Define our AI assistant function
+# 2. Load your personal cheat sheet
+try:
+    with open("profile.json", "r") as profile_file:
+        user_profile = json.load(profile_file)
+        writing_rules = user_profile.get("writing_rules", "")
+        examples = "\n".join(user_profile.get("example_past_messages", []))
+except FileNotFoundError:
+    writing_rules = "Write naturally."
+    examples = "No examples provided."
+
+# 3. Define our AI assistant function
 def get_ai_suggestions(chat_history, mood):
     url = f"https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key={api_key}"
     
-    # The instructions we give to the AI
+    # --- THE PERSONALIZED SYSTEM PROMPT ---
     instructions = f"""
-    You are a smart keyboard assistant. 
-    Conversation history: {chat_history}
-    User wants to sound: {mood}
+    You are an advanced AI keyboard extension ghostwriting for the user. 
+    Your job is to generate 3 contextual, natural-sounding text message replies that match the requested tone.
     
-    Provide 3 short, natural reply options. Do not explain them.
+    CRITICAL: You must mimic the user's personal writing style. 
+    User's Writing Rules: {writing_rules}
+    
+    Here are examples of how the user actually texts:
+    {examples}
+    
+    STRICT RULES:
+    1. Act purely as a ghostwriter.
+    2. Do NOT explain your choices or add pleasantries.
+    3. Output exactly 3 distinct reply options, numbered 1, 2, and 3.
+    
+    CONVERSATION HISTORY TO ANALYZE:
+    {chat_history}
+    
+    TARGET REPLY TONE: 
+    {mood}
     """
     
-    # Format the request for Google
     payload = {"contents": [{"parts": [{"text": instructions}]}]}
     request = urllib.request.Request(
         url, 
@@ -30,17 +52,20 @@ def get_ai_suggestions(chat_history, mood):
         headers={'Content-Type': 'application/json'}
     )
     
-    # Send the request and return the answer
-    with urllib.request.urlopen(request) as response:
-        answer = json.loads(response.read().decode("utf-8"))
-        return answer['candidates'][0]['content']['parts'][0]['text']
+    try:
+        with urllib.request.urlopen(request) as response:
+            answer = json.loads(response.read().decode("utf-8"))
+            return answer['candidates'][0]['content']['parts'][0]['text']
+    except Exception as e:
+        return "⚠️ Connection error. Please try generating again."
 
-# 3. Test the code
+# Testing
 if __name__ == "__main__":
-    test_chat = "Client: We need the project delivered by Friday."
-    test_mood = "Professional and reassuring"
-    
-    print("Asking AI for suggestions...")
-    print("----------------------------")
-    result = get_ai_suggestions(test_chat, test_mood)
-    print(result)
+    print("Engine is ready.")
+
+
+    STRICT RULES:
+    1. Act purely as a ghostwriter for the human user.
+    2. NEVER refer to yourself as an AI, a program, or a keyboard. You are drafting text for the human to send about themselves.
+    3. Do NOT explain your choices or add pleasantries.
+    4. Output exactly 3 distinct reply options, numbered 1, 2, and 3.
